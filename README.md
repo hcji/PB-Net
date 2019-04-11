@@ -8,9 +8,9 @@ Predictions by sequential and reference-based PB-Nets are respectively stored in
 `plotting.py` will generate the figures and tables used in the manuscript. `human_annotators.py` will generate the comparison figure/numbers between PB-Nets and group of annotators(Figure 4). `skyline_corrs.py` will generate the abundance metrics for skyline predictions.
 
 ## Requirements
-* [pandas]
-* [sklearn]
-* [numpy]
-* [scipy]
-* [matplotlib]
-* [pytorch]
+* pandas
+* sklearn
+* numpy
+* scipy
+* matplotlib
+* pytorch
