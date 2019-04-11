@@ -1,5 +1,4 @@
 # PB-Net
-PeakBoundaryNet
 This repo is a minimum example of PeakBoundaryNet: a sequential neural network for peak boundary detection and peak area integration. 
 
 The data used for test is stored in `test_input.pkl` as a list of peak instances, each instance is a tuple of (X, y, metainfo, peak name).
