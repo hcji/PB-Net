@@ -1,7 +1,7 @@
 # PB-Net
 This repo is a minimum example of PeakBoundaryNet: a sequential neural network for peak boundary detection and peak area integration. 
 
-The data used for test is stored in `test_input.pkl` as a list of peak instances, each instance is a tuple of (X, y, metainfo, peak name).
+The data used for test is stored in `test_input.pkl` as a list of peak instances, each instance is a tuple of (X, y, metainfo, sample name & peak name).
 
 Predictions by sequential and reference-based PB-Net are respectively stored in `test_preds.pkl` and `test_preds_ref.pkl`, as a list of numpy arrays representing peak start/end probabilities (in the same order as input). These predictions can also be generated through `run.py`, based on the pre-trained model.
 
