@@ -9,6 +9,13 @@ Created on Mon Oct  8 12:19:34 2018
 import numpy as np
 
 def baseline(pair, thr=0.04, grad_thr=0.001):
+  """ Rule-based method adapted from "A simple peak detection and label-free quantitation algorithm for chromatography-mass spectrometry"
+  pair: data input
+  thr: float, optional
+      threshold for finding left/right wings of the peak
+  grad_thr: float, optional
+      threshold for finding left/right ends of the peak (on the gradient of intensity)
+  """
   X = pair[0]
   grad = X[1:, 1] - X[:-1, 1]
   grad = np.concatenate([grad, np.array(grad[-1]).reshape((1,))])

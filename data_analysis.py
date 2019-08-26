@@ -17,6 +17,11 @@ def background_subtraction(rt_intensity, profile):
   """ Subtract signal background
       background = lowest signal in 
          [rt_start(human label) - 0.1, rt_end(human label) + 0.1]
+
+  rt_intensity: np.array
+      N*2 array of retention time/intensity pairs
+  profile: tuple/list
+      peak profiles
   """
   window_start = profile[1] - 0.1
   window_end = profile[2] + 0.1
@@ -28,13 +33,30 @@ def background_subtraction(rt_intensity, profile):
   return np.stack([rt_intensity[:, 0], signal], 1)
 
 def get_start_end(pred):
-  """ Get discrete start/end position from y_pred """
+  """ Get discrete start/end position from pred
+
+  pred: np.array
+      N*2 array of predictions on peak start/end
+  """
   start = np.argmax(pred[:, 0])
   # Prevent end position appears prior to start position
   end = np.argmax(pred[start:, 1]) + start
   return start, end
 
 def calculate_abundance(pred, sample, intg=False, sub=True, sum_of_signals=False):
+  """ Calculate abundance of a XIC curve
+
+  pred: np.array
+      N*2 array of predictions on peak start/end
+  sample: list
+      standard input structure: [X, y, profiles, names]
+  intg: bool, optional
+      if to use weighted peak start/end
+  sub: bool, optional
+      if to substract baseline
+  sum_of_signals: bool, optional
+      if to use the simple sum of signals/integration of signals over retention time
+  """
   if sub:
     out = background_subtraction(sample[0], sample[2])
   else:
@@ -74,6 +96,11 @@ def calculate_abundance(pred, sample, intg=False, sub=True, sum_of_signals=False
 def eval_dists(test_data, preds):
   """ Evaluate the distances(in points) between 
       boundary predictions and labels 
+
+  test_data: list
+      list of standard input structure
+  preds: list
+      list of np.array(predictions of shape N*2)
   """
   dists = []
   for i, sample in enumerate(test_data):
@@ -92,6 +119,13 @@ def eval_dists(test_data, preds):
 def eval_accuracy(test_data, preds, thr=2):
   """ Evaluate the accuracy of boundary predictions
       Accurate is defined as average boundaries prediction error within 'thr'
+
+  test_data: list
+      list of standard input structure
+  preds: list
+      list of np.array(predictions of shape N*2)
+  thr: int, optional
+      threshold of error on boundary prediction(in number of points) for "accurate" predictions
   """
   n_samples = len(preds)
   correct_ct = 0
@@ -112,6 +146,13 @@ def eval_accuracy2(test_data, preds, thr=0.05):
 
       Evaluate the accuracy of apex predictions:
       Accurate is defined as correct apex being picked in the prediction
+
+  test_data: list
+      list of standard input structure
+  preds: list
+      list of np.array(predictions of shape N*2)
+  thr: float, optional
+      threshold of error on abundance prediction for "accurate" predictions
   """
   n_samples = len(preds)
   correct_ct = 0
@@ -143,6 +184,17 @@ def eval_abundance_accuracy(test_data, preds, thr=0.05, intg=False):
   """ Evaluate the accuracy of abundance predictions
       Accurate is defined as (total) abundance differences
       between prediction and label less than `thr` * abundance(label)
+
+      Note this is different from `eval_accuracy2`.
+
+  test_data: list
+      list of standard input structure
+  preds: list
+      list of np.array(predictions of shape N*2)
+  thr: float, optional
+      threshold of error on abundance prediction for "accurate" predictions
+  intg: bool, optional
+      if to use weighted peak start/end
   """
   y_trues = []
   y_preds = []
@@ -162,7 +214,17 @@ def eval_abundance_accuracy(test_data, preds, thr=0.05, intg=False):
 
 
 def eval_abundance_correlation(test_data, preds, mode='r2', intg=False):
-  """ Evaluate correlation of abundance(integration) of peak"""
+  """ Evaluate correlation of abundance(integration) of peak
+
+  test_data: list
+      list of standard input structure
+  preds: list
+      list of np.array(predictions of shape N*2)
+  mode: str, optional
+      correlation type to be reported
+  intg: bool, optional
+      if to use weighted peak start/end
+  """
   y_trues = []
   y_preds = []
   for i, sample in enumerate(test_data):
@@ -196,11 +258,10 @@ def eval_abundance_correlation(test_data, preds, mode='r2', intg=False):
 def plot_peak(pair, pred=None):
   """ Plot a peak
 
-  Args:
-  -----
   pair: list
-      [X, y, profiles, names]
-
+      standard input structure: [X, y, profiles, names]
+  pred: None or np.array, optional
+      if provided, predicted probabilities of peak start/end will also be plotted
   """
   X = pair[0]
   profile = pair[2]
@@ -217,6 +278,13 @@ def plot_peak(pair, pred=None):
   plt.legend(loc=4)
   
 def calculate_confidence(pred, thr=0.2):
+  """ Calculate confidence of a peak start/end prediction
+  
+  pred: np.array
+      N*1 array of predictions on peak start or end
+  thr: float, optional
+      threshold of defining a local maximum (fixed to 0.2 in most cases)
+  """
   apex = np.max(pred)
   base = np.sqrt(apex)
   over_threshold = []
@@ -250,6 +318,13 @@ def calculate_confidence(pred, thr=0.2):
     return (1. - score/total_score) * base
 
 def eval_confidences(preds, thr=0.2):
+  """ Calculate confidences for a list of peak predictions
+  
+  preds: list
+      list of np.array(predictions of shape N*2)
+  thr: float, optional
+      threshold of defining a local maximum (fixed to 0.2 in most cases)
+  """
   conf = [calculate_confidence(p[:, 0], thr=thr) * \
           calculate_confidence(p[:, 1], thr=thr) for p in preds]
   return conf

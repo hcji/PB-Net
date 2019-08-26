@@ -13,7 +13,19 @@ import numpy as np
 
 class BiLSTM(nn.Module):
   def __init__(self, input_dim=256, hidden_dim=128, n_layers=2, gpu=True, random_init=True):
-    """ A wrapper of pytorch bi-lstm module """
+    """ A wrapper of pytorch bi-lstm module 
+
+    input_dim: int, optional
+        size of input feature dimension
+    hidden_dim: int, optional
+        size of hidden LSTM layer
+    n_layers: int, optional 
+        number of LSTM layers
+    gpu: bool, optional
+        if the model is run on GPU
+    random_init: bool, optional
+        if the initialize the LSTM hidden state randomly, for debug use
+    """
     super(BiLSTM, self).__init__()
     self.input_dim = input_dim
     self.hidden_dim = hidden_dim
@@ -42,8 +54,12 @@ class BiLSTM(nn.Module):
                 t.zeros(2*self.n_layers, batch_size, self.hidden_dim//2))
 
   def forward(self, sequence, batch_size=1):
-    # Get the emission scores from the BiLSTM
-    # sequence: seq_len * batch_size * feat_dim
+    """
+    sequence: torch Tensor
+        input batch of shape seq_len * batch_size * input_dim
+    batch_size: int, optional
+        batch size
+    """
     self.hidden = self._init_hidden(batch_size=batch_size)
     inputs = sequence.reshape((-1, batch_size, self.input_dim))
     lstm_out, self.hidden = self.lstm(inputs, self.hidden)
@@ -56,9 +72,20 @@ class MultiheadAttention(nn.Module):
                V_dim=128,
                head_dim=32, 
                n_heads=8):
-    """ As described in https://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf """
+    """ As described in https://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf 
+
+    Q_dim: int, optional
+        size of query input
+    V_dim: int, optional
+        size of value input
+    head_dim: int, optional
+        number of hidden nodes in each head
+    n_heads: int, optional
+        number of attention layer heads
+    """
     super(MultiheadAttention, self).__init__()
     self.Q_dim = Q_dim
+    # Key = Query in self attention
     self.K_dim = self.Q_dim
     self.V_dim = V_dim
     self.head_dim = head_dim
@@ -81,9 +108,16 @@ class MultiheadAttention(nn.Module):
         nn.Linear(self.Q_dim*4, self.Q_dim))
 
   def forward(self, sequence=None, K_in=None, Q_in=None, V_in=None):
-    # query: seq_len_Q * batch_size * Q_dim
-    # key:   seq_len_K * batch_size * Q_dim
-    # value: seq_len_K * batch_size * V_dim
+    """
+    sequence: None or torch Tensor, optional
+        if given, tensor of self attention
+    Q_in: None or torch Tensor, optional
+        if given, query of shape seq_len_Q * batch_size * Q_dim
+    K_in: None or torch Tensor, optional
+        if given, key of shape seq_len_K * batch_size * Q_dim
+    V_in: None or torch Tensor, optional
+        if given, value of shape seq_len_K * batch_size * V_dim
+    """
     outs = []
     if K_in is None:
       K_in = sequence
@@ -108,7 +142,15 @@ class Attention(nn.Module):
                Q_dim=128,
                V_dim=2,
                return_attention=False):
-    """ Vanilla attention layer """
+    """ Vanilla attention layer, used in reference-based model 
+
+    Q_dim: int, optional
+        size of query input
+    V_dim: int, optional
+        size of value input
+    return_attention: bool, optional
+        if to return the attention map
+    """
     super(Attention, self).__init__()
     self.Q_dim = Q_dim
     self.K_dim = self.Q_dim
@@ -116,9 +158,16 @@ class Attention(nn.Module):
     self.return_attention = return_attention
 
   def forward(self, sequence=None, K_in=None, Q_in=None, V_in=None):
-    # query: seq_len_Q * batch_size * Q_dim
-    # key:   seq_len_K * batch_size * Q_dim
-    # value: seq_len_K * batch_size * V_dim
+    """
+    sequence: None or torch Tensor, optional
+        if given, tensor of self attention
+    Q_in: None or torch Tensor, optional
+        if given, query of shape seq_len_Q * batch_size * Q_dim
+    K_in: None or torch Tensor, optional
+        if given, key of shape seq_len_K * batch_size * Q_dim
+    V_in: None or torch Tensor, optional
+        if given, value of shape seq_len_K * batch_size * V_dim
+    """
     if K_in is None:
       K_in = sequence
     if Q_in is None:
@@ -136,7 +185,7 @@ class Attention(nn.Module):
       return out.transpose(0, 1), a.transpose(0, 1)
     else:
       return out.transpose(0, 1)
-  
+
 class MatchLoss(nn.Module):
   def forward(self, labels, preds, weights=None, ratio=1., **kwargs):
     """ `preds` are log-probabilities predictions: seq_len * batch_size * n_tasks * n_classes
@@ -156,3 +205,4 @@ class MatchLossRaw(nn.Module):
     if weights is not None:
       loss = loss * weights
     return t.sum(loss)
+  
