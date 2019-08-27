@@ -20,6 +20,7 @@ font = {'weight': 'normal',
 color_seq = (44./256, 83./256, 169./256, 1.)
 color_ref = (69./256, 209./256, 163./256, 1.)
 
+# Test data, please use git-lfs to download files below
 test_data = pickle.load(open('./test_input.pkl', 'rb'))
 # Pre-saved sequential PB-Net predictions on test input
 pred = pickle.load(open('./test_preds.pkl', 'rb'))

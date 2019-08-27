@@ -112,8 +112,9 @@ plt.ylabel("Counts", fontdict=font)
 plt.tight_layout()
 plt.savefig('./figs/fig4_comp_annotators.png', dpi=300)
 
-print(wilcoxon(np.abs(abds[1] - mean_abds)/mean_abds, std_abds/mean_abds))
-print(wilcoxon(np.abs(abds[0] - mean_abds)/mean_abds, std_abds/mean_abds))
+print(np.mean(std_abds/mean_abds))
+print(np.mean(np.abs(abds[1] - mean_abds)/mean_abds)) # ref
+print(np.mean(np.abs(abds[0] - mean_abds)/mean_abds)) # seq
 
 #########################################################################
 

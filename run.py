@@ -25,9 +25,7 @@ class Config:
     signal_max = 500
     
 opt=Config()
-
 ref = pickle.load(open('./utils/reference_peaks_dat.pkl', 'rb'))
-
 test_input = pickle.load(open('./test_input.pkl', 'rb'))
 
 # Pre-saved sequential PB-Net predictions on test input
@@ -36,7 +34,7 @@ test_input = pickle.load(open('./test_input.pkl', 'rb'))
 # Pre-saved reference-based PB-Net predictions on test input
 #test_preds_ref = pickle.load(open('./test_preds_ref.pkl', 'rb'))
 
-###
+### sequential PB-Net predictions ###
 net = TestModel(input_dim=384,
                 hidden_dim_lstm=128,
                 hidden_dim_attention=32,
@@ -45,11 +43,9 @@ net = TestModel(input_dim=384,
                 gpu=opt.gpu)
 trainer = Trainer(net, opt, MatchLoss(), featurize=True)
 trainer.load('./model-seq.pth')
-
-# sequential PB-Net predictions
 preds = trainer.predict(test_input)
 
-###
+### reference-based PB-Net predictions ###
 net = ReferenceModel(input_dim=384,
                      hidden_dim_lstm=128,
                      hidden_dim_attention=32,
@@ -59,6 +55,4 @@ net = ReferenceModel(input_dim=384,
 trainer = ReferenceTrainer(net, opt, MatchLossRaw(), featurize=True)
 test_inputs = [test_input, ref]
 trainer.load('./model-ref.pth')
-
-# reference-based PB-Net predictions
 preds_ref = trainer.predict(test_inputs)
