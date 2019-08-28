@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from models import TestModel, ReferenceModel
 from trainer import Trainer, ReferenceTrainer
 from biLSTM import MatchLoss, MatchLossRaw
+from data_utils import rt_shift_augmentation
 
 font = {'weight': 'normal',
         'size': 16}
@@ -658,3 +659,78 @@ for i in inds:
 
 plt.tight_layout()  
 plt.savefig('./figs/figS6_samples.png', dpi=300)
+
+############################################################
+
+class Config:
+    lr = 0.001
+    batch_size = 8
+    max_epoch = 1 # =1 when debug
+    workers = 2
+    gpu = False # use gpu or not
+    lower_limit = -1.0
+    upper_limit = 1.0
+    signal_max = 500
+    
+opt=Config()
+ref = pickle.load(open('./utils/reference_peaks_dat.pkl', 'rb'))
+
+net = TestModel(input_dim=384,
+                hidden_dim_lstm=128,
+                hidden_dim_attention=32,
+                n_lstm_layers=2,
+                n_attention_heads=8,
+                gpu=opt.gpu)
+trainer = Trainer(net, opt, MatchLoss(), featurize=True)
+trainer.load('./model-seq.pth')
+
+### reference-based PB-Net predictions ###
+net_ref = ReferenceModel(input_dim=384,
+                         hidden_dim_lstm=128,
+                         hidden_dim_attention=32,
+                         n_lstm_layers=2,
+                         n_attention_heads=8,
+                         gpu=opt.gpu)
+trainer_ref = ReferenceTrainer(net_ref, opt, MatchLossRaw(), featurize=True)
+trainer_ref.load('./model-ref.pth')
+
+def report_scores(test_data, preds):
+  dists1 = eval_dists(test_data, pred_bl)
+  
+  y_trues = []
+  y_preds = []
+  for i, sample in enumerate(test_data):
+    output = preds[i]
+    y_trues.append(calculate_abundance(sample[1], sample))
+    y_preds.append(calculate_abundance(output, sample, intg=False))
+  y_trues = np.array(y_trues)
+  y_preds = np.array(y_preds)
+  
+  test_data_peaks = np.array([p[3][1] for p in test_data])
+  peaks = set(test_data_peaks)
+  lengths = []
+  r_scores = []
+  sr_scores = []
+  for peak in peaks:
+    inds = np.where(test_data_peaks == peak)[0]
+    lengths.append(len(inds))
+    r_scores.append(pearsonr(np.log(y_trues[inds] + 1e-9), np.log(y_preds[inds] + 1e-9))[0])
+    sr_scores.append(spearmanr(y_trues[inds], y_preds[inds]).correlation)
+  return np.mean(dists1) * 0.6, np.mean(r_scores), np.mean(sr_scores)
+
+# Assuming RT shift up to 0.1 min (6s)
+scores_bl = {}
+scores = {}
+scores_ref = {}
+for i in range(10):
+  def sampler():
+    return i
+  test_data_shifted = rt_shift_augmentation(test_data, shift_sampling=sampler)
+  pred_shifted_bl = [baseline(p) for p in test_data_shifted]
+  pred_shifted = trainer.predictv2(test_data_shifted, 32)
+  pred_shifted_ref = trainer_ref.predictv2((test_data_shifted, ref), 32)
+  scores_bl[i] = report_scores(test_data_shifted, pred_shifted_bl)
+  scores[i] = report_scores(test_data_shifted, pred_shifted)
+  scores_ref[i] = report_scores(test_data_shifted, pred_shifted_ref)
+  
+  

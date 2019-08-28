@@ -395,6 +395,8 @@ def rt_shift_augmentation(data, shift_sampling='uniform', threshold=15, seed=Non
       shift = np.random.randint(-threshold, threshold+1)
     elif shift_sampling == 'gaussian':
       shift = int(truncnorm.rvs(-2, 2) * threshold/2)
+    else:
+      shift = shift_sampling()
     # data augmentation: shift input intensities
     X = d[0]
     new_X = deepcopy(X)
