@@ -14,6 +14,8 @@ import pickle
 import os
 from data_analysis import background_subtraction
 from glob import glob
+from copy import deepcopy
+from scipy.stats import truncnorm
 
 # Default paths (data for train/valid set)
 UTILS_PATH = os.path.join(os.environ['HOME'], 'ms', 'utils')
@@ -372,6 +374,41 @@ def generate_train_labels(X, profiles, dist_factor=20., itgr_factor=2.):
       diff_abd = 100 * float(np.sum(signals[right+1:right+i+1, 1]))/abd
       y[right + i, 1] = np.exp(-i**2/dist_factor) * np.exp(-diff_abd**2/itgr_factor)
   return y
+
+def rt_shift_augmentation(data, shift_sampling='uniform', threshold=15, seed=None):
+  """ Generate augmented data pair by shifting retention time
+
+  data: list
+      list of standard input pairs
+  shift_sampling: str, optional
+      distribution from which rt shift is sampled
+  threshold: int, optional
+      upper/lower threshold for rt shift in the augmentation
+  seed: int, optional
+      random seed
+  """
+  out_data = []
+  if seed is not None:
+    np.random.seed(seed)
+  for d in data:
+    if shift_sampling == 'uniform':
+      shift = np.random.randint(-threshold, threshold+1)
+    elif shift_sampling == 'gaussian':
+      shift = int(truncnorm.rvs(-2, 2) * threshold/2)
+    # data augmentation: shift input intensities
+    X = d[0]
+    new_X = deepcopy(X)
+    new_X[:, 1] = np.concatenate([X[shift:, 1], X[:shift, 1]])
+    step_size = np.median(X[1:, 0] - X[:-1, 0])
+    new_prof = deepcopy(d[2])
+    new_prof[1] -= shift * step_size # rt_start
+    new_prof[2] -= shift * step_size # rt_end
+    new_prof[5] -= shift * step_size # rt
+    new_prof[6] -= shift * step_size # rt_difference
+    
+    new_y = generate_train_labels(new_X, new_prof)
+    out_data.append((new_X, new_y, new_prof, d[3]))
+  return out_data
 
 def weights_by_intensity(data, max_val=120., min_val=50.):
   """ Generate sample weights according to their max signal intensity 
