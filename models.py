@@ -82,14 +82,14 @@ class TestModel(nn.Module):
     gpu: bool, optional
         if run on GPU
     """
-    assert batch_size == 1
-    output = t.exp(self.forward(sequence, 1)[:, 0, :, 1])
+    #assert batch_size == 1
+    output = t.exp(self.forward(sequence, batch_size)[:, :, :, 1])
     if gpu:
       output = output.cpu()
     output = output.data.numpy()
     return output
-
     
+
 class ReferenceModel(nn.Module):
   def __init__(self,
                input_dim=256,
@@ -194,8 +194,8 @@ class ReferenceModel(nn.Module):
     gpu: bool, optional
         if run on GPU
     """
-    assert batch_size == 1
-    output = self.forward(sequence, ref_seq, ref_label, 1)[:, 0, :, 1]
+    #assert batch_size == 1
+    output = self.forward(sequence, ref_seq, ref_label, batch_size)[:, :, :, 1]
     if gpu:
       output = output.cpu()
     output = output.data.numpy()

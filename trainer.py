@@ -288,9 +288,73 @@ class Trainer(object):
         for i, item in enumerate(sample):
           sample[i] = item.cuda() # No extra first dimension
       inp, label, sample_weights = sample
-      preds.append(self.net.predict(inp, 1, self.opt.gpu))
+      preds.append(self.net.predict(inp, 1, self.opt.gpu)[:, 0]) # Omit the batch dimension
     return preds
   
+  def predictv2(self, test_data, batch_size=None):
+    """ Generate predictions (in batch)
+
+    test_data: list
+        list of standard input structure (X, y, profile, name)
+    batch_size: None or int, optional
+        if given, specify batch size
+    """
+    if batch_size is None:
+      batch_size = self.opt.batch_size
+    order = np.argsort([p[0].shape[0] for p in test_data])
+    length = [test_data[i][0].shape[0] for i in order]
+    _test_data = []
+    _order = []
+    _weight = []
+    _length = []
+    ct = 0
+    current_batch_length = length[0]
+    ct = 0
+    for i, l in zip(order, length):
+      if l == current_batch_length and ct < batch_size:
+        _test_data.append(test_data[i])
+        _order.append(i)
+        _weight.append(1.)
+        _length.append(l)
+        ct += 1
+        continue
+      for _ in range(batch_size - ct):
+        _test_data.append(_test_data[-1])
+        _order.append(-1)
+        _weight.append(0.)
+        _length.append(current_batch_length)
+      current_batch_length = l
+      _test_data.append(test_data[i])
+      _order.append(i)
+      _weight.append(1.)
+      _length.append(l)
+      ct = 1
+    for _ in range(batch_size - ct):
+      _test_data.append(_test_data[-1])
+      _order.append(-1)
+      _weight.append(0.)
+      _length.append(current_batch_length)
+    
+    test_batches = self.assemble_batch(_test_data, batch_size=batch_size, sort=False)
+    dataset = BatchSpectraDataset(test_batches, featurizers=[self.featurizer, None, None])
+    preds = []
+    for sample in dataset:
+      if self.opt.gpu:
+        for i, item in enumerate(sample):
+          sample[i] = item.cuda() # No extra first dimension
+      inp, label, sample_weights = sample
+      pred = self.net.predict(inp, batch_size, self.opt.gpu)
+      for p in np.split(pred, batch_size, axis=1):
+        preds.append(p[:, 0])
+    
+    out_preds = [None] * len(test_data)
+    for i, p in zip(_order, preds):
+      if i >= 0:
+        out_preds[i] = p
+    for p in out_preds:
+      assert not p is None
+    return out_preds
+
 class ReferenceTrainer(Trainer):
   def assemble_batch(self, 
                      data_ref,
@@ -355,7 +419,7 @@ class ReferenceTrainer(Trainer):
         
         step_size = np.median(X[1:, 0] - X[:-1, 0])
         if augment:
-          offset = np.round(np.random.randint(-10, 11)).astype(int)
+          offset = np.round(np.random.randint(-15, 16)).astype(int)
         else:
           offset = 0
         if offset != 0:
@@ -494,6 +558,76 @@ class ReferenceTrainer(Trainer):
       inp, label, ref_inp, ref_label, sample_weights, sample_att = sample
       preds.append(self.net.predict(inp, ref_inp, ref_label, 1, self.opt.gpu))
     return preds
+
+  def predictv2(self, test_data_ref, batch_size=None):
+    """ Generate predictions (in batch)
+
+    test_data_ref: (`data`, `ref`)
+      `data` is the same list of input structures
+      `ref` is a dict of {peak_name: reference input structure}
+    batch_size: None or int, optional
+        if given, specify batch size
+    """
+    if batch_size is None:
+      batch_size = self.opt.batch_size
+
+    test_data, ref = test_data_ref
+    orig_lengths = [(p[0].shape[0], ref[p[3][1]][0].shape[0]) for p in test_data]
+
+    order = sorted(np.arange(len(orig_lengths)), key=lambda x: orig_lengths[x])
+    length = [orig_lengths[i] for i in order]
+    _test_data = []
+    _order = []
+    _weight = []
+    _length = []
+    ct = 0
+    current_batch_length = length[0]
+    ct = 0
+    for i, l in zip(order, length):
+      if l == current_batch_length and ct < batch_size:
+        _test_data.append(test_data[i])
+        _order.append(i)
+        _weight.append(1.)
+        _length.append(l)
+        ct += 1
+        continue
+      for _ in range(batch_size - ct):
+        _test_data.append(_test_data[-1])
+        _order.append(-1)
+        _weight.append(0.)
+        _length.append(current_batch_length)
+      current_batch_length = l
+      _test_data.append(test_data[i])
+      _order.append(i)
+      _weight.append(1.)
+      _length.append(l)
+      ct = 1
+    for _ in range(batch_size - ct):
+      _test_data.append(_test_data[-1])
+      _order.append(-1)
+      _weight.append(0.)
+      _length.append(current_batch_length)
+
+    test_batches = self.assemble_batch((_test_data, ref), augment=False, batch_size=batch_size, sort=False)
+    dataset = BatchSpectraDataset(test_batches, 
+                                  featurizers=[self.featurizer, None, self.featurizer, None, None, None])
+    preds = []
+    for sample in dataset:
+      if self.opt.gpu:
+        for i, item in enumerate(sample):
+          sample[i] = item.cuda() # No extra first dimension
+      inp, label, ref_inp, ref_label, sample_weights, sample_att = sample
+      pred = self.net.predict(inp, ref_inp, ref_label, batch_size, self.opt.gpu)
+      for p in np.split(pred, batch_size, axis=1):
+        preds.append(p[:, 0])
+
+    out_preds = [None] * len(test_data)
+    for i, p in zip(_order, preds):
+      if i >= 0:
+        out_preds[i] = p
+    for p in out_preds:
+      assert not p is None
+    return out_preds
 
   def attention_map(self, test_sample, ref):
     """ Extract attention map between a query sample and its reference
