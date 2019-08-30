@@ -141,7 +141,7 @@ class Trainer(object):
       self.net = self.net.cuda()
       self.criterion = self.criterion.cuda()
   
-  def assemble_batch(self, data, sample_weights=None, batch_size=None, sort=True):
+  def assemble_batch(self, data, sample_weights=None, batch_size=None, sort=True, augment=False):
     """ Assemble data into batches
     
     data: list
@@ -152,6 +152,8 @@ class Trainer(object):
         specify batch size if given
     sort: bool, optional
         if to reorder samples in the data to ease training
+    augment: bool, optional
+        if to use data augmentation(RT shift) for training
     """
     if batch_size is None:
       batch_size = self.opt.batch_size
@@ -181,11 +183,27 @@ class Trainer(object):
           # when reference apex not given
           rt = sample[0][np.argmax(sample[0][:, 1]), 0]
         X = deepcopy(sample[0][:])
+        y = sample[1]
+        prof = deepcopy(sample[2])
+
+        step_size = np.median(X[1:, 0] - X[:-1, 0])
+        if augment:
+          offset = np.round(np.random.randint(-10, 10)).astype(int)
+        else:
+          offset = 0
+        if offset != 0:
+          # data augmentation: shift input intensities
+          X[:, 1] = np.concatenate([X[offset:, 1], X[:offset, 1]])
+          prof[1] -= offset * step_size
+          prof[2] -= offset * step_size
+          rt -= offset * step_size
+          if y is not None:
+            y = generate_train_labels(X, prof)
+
         X[:, 0] = X[:, 0] - rt
         # pad inputs in a batch to the same sequence length
         out_batch_X.append(np.pad(X, ((0, batch_length - sample_length), (0, 0)), 'constant'))
-        if sample[1] is not None:
-          y = deepcopy(sample[1][:])
+        if y is not None:
           out_batch_y.append(np.pad(y, ((0, batch_length - sample_length), (0, 0)), 'constant'))
         else:
           out_batch_y.append(np.zeros_like(out_batch_X[-1]))
@@ -221,7 +239,7 @@ class Trainer(object):
   def display_loss(self, train_data, **kwargs):
     return self.run_model(train_data, train=False, n_epochs=1, **kwargs)
     
-  def run_model(self, data, sample_weights=None, train=False, n_epochs=None, **kwargs):
+  def run_model(self, data, sample_weights=None, train=False, n_epochs=None, augment=False, **kwargs):
     """ Train/calculate total loss
 
     data: list
@@ -232,6 +250,8 @@ class Trainer(object):
         if in train mode
     n_epochs: None or int, optional
         specify number of epochs if given
+    augment: bool, optional
+        if to use data augmentation(RT shift) for training
     """
     if train:
       optimizer = Adam(self.net.parameters(),
@@ -244,7 +264,7 @@ class Trainer(object):
     if n_epochs is not None:
       epochs = n_epochs
     n_points = len(data)
-    data_batches = self.assemble_batch(data, sample_weights=sample_weights)
+    data_batches = self.assemble_batch(data, sample_weights=sample_weights, augment=augment)
     dataset = BatchSpectraDataset(data_batches, 
                                   featurizers=[self.featurizer, None, None])
     data_loader = DataLoader(dataset, batch_size=1, shuffle=True, num_workers=4)
