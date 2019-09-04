@@ -110,7 +110,7 @@ plt.legend(fontsize=14)
 plt.xlabel("Relative Error/Standard Deviation", fontdict=font)
 plt.ylabel("Counts", fontdict=font)
 plt.tight_layout()
-plt.savefig('./figs/fig4_comp_annotators.png', dpi=300)
+plt.savefig('./figs/fig4_comp_annotators.eps', format='eps')
 
 print(np.mean(std_abds/mean_abds))
 print(np.mean(np.abs(abds[1] - mean_abds)/mean_abds)) # ref
