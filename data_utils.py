@@ -174,7 +174,10 @@ def load_signals(path):
       product = ch.getProduct().getMZ()
       if (precursor, product) not in signals:
         signals[(precursor, product)] = []
-      signals[(precursor, product)].append(np.stack(ch.get_peaks(), 1))
+      signal = np.stack(ch.get_peaks(), 1)
+      if pyopenms.__version__ >= '2.4.0': # Since 2.4.0, pyopenms generate peak signals in second (change to minute)
+        signal[:, 0] = signal[:, 0]/60.
+      signals[(precursor, product)].append(signal)
     return signals, 'mzML'
 
 def select_peak(sorted_signals, 
@@ -430,6 +433,21 @@ def weights_by_intensity(data, max_val=120., min_val=50.):
     weights.append(weight)
   return weights
 
+def baseline_adjust(X, baseline=0.):
+  """ Adjust baseline of trajectory to designated value
+  
+  X: np.array
+      N*2 array of retention time/intensity pairs
+  baseline: float
+      Standard baseline intensity
+  """
+  baseline_orig = np.min(X[:, 1])
+  if baseline_orig < baseline - 2.:
+    # Allowing for fluctuation of 2
+    adjust_value = baseline - baseline_orig
+    X[:, 1] = X[:, 1] + adjust_value
+  return X
+  
 def load_sample(path=DATA_PATH,
                 label_path=LABEL_PATH,
                 reference_path=REFERENCE_PATH,
@@ -557,6 +575,8 @@ def load_sample(path=DATA_PATH,
           # Build pseudo-labels, indicated by -1 abundance
           profiles = np.array([-1., ref_p[3], ref_p[4], -1., ref_p[5], -1., 0.])
           y = None
+        # Manually adjusting baseline to 50 if not met (models trained with baseline 50)
+        X = baseline_adjust(X, baseline=50.)
         out_samples.append((X, y, profiles, names))
   if reload:
     if clean:
