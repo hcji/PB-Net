@@ -105,7 +105,7 @@ plt.legend(fontsize=14)
 plt.xlabel("Absolute Prediction Error (second)", fontdict=font)
 plt.ylabel("Counts", fontdict=font)
 plt.tight_layout()
-plt.savefig('./figs/fig2_test_MAE_bar.png', dpi=300)
+plt.savefig('./figs/fig2_test_MAE_bar.eps', format='eps')
 
 # Figure 2B
 plt.clf()
@@ -118,7 +118,7 @@ plt.legend(fontsize=14)
 plt.xlabel("Absolute Prediction Error (second)", fontdict=font)
 plt.ylabel("Fraction of Data", fontdict=font)
 plt.tight_layout()
-plt.savefig('./figs/fig2_test_MAE_cdf.png', dpi=300)
+plt.savefig('./figs/fig2_test_MAE_cdf.eps', format='eps')
 
 # Figure 2C
 plt.clf()
@@ -136,7 +136,7 @@ plt.ylim(-0.5, 15.5)
 plt.xlabel("Log Abundance - Human Annotation", fontdict=font)
 plt.ylabel("Log Abundance - Prediction", fontdict=font)
 plt.tight_layout()
-plt.savefig('./figs/fig2_test_abd_correlation.png', dpi=600)
+plt.savefig('./figs/fig2_test_abd_correlation.eps', format='eps')
 
 #############################################################
 y_trues = []
@@ -216,7 +216,7 @@ plt.ylim(-0.5, 15.5)
 plt.xlabel("Log Abundance - Human Annotation", fontdict=font)
 plt.ylabel("Log Abundance - Prediction", fontdict=font)
 plt.tight_layout()
-plt.savefig('./figs/figS2_weighted_abd_correlation1.png', dpi=600)
+plt.savefig('./figs/figS2_weighted_abd_correlation1.eps', format='eps')
 
 # Figure S2B
 plt.clf()
@@ -236,7 +236,7 @@ plt.ylim(-0.5, 15.5)
 plt.xlabel("Log Abundance - Human Annotation", fontdict=font)
 plt.ylabel("Log Abundance - Prediction", fontdict=font)
 plt.tight_layout()
-plt.savefig('./figs/figS2_weighted_abd_correlation2.png', dpi=600)
+plt.savefig('./figs/figS2_weighted_abd_correlation2.eps', format='eps')
 
 ############################################################################
 y_trues = []
@@ -291,7 +291,7 @@ plt.xlim(0.18, 1.02)
 plt.xlabel("Confidence Score", fontdict=font)
 plt.ylabel("Counts", fontdict=font)
 plt.tight_layout()
-plt.savefig("./figs/figS4_conf_histogram.png", dpi=300)
+plt.savefig("./figs/figS4_conf_histogram.eps", format='eps')
 
 # Figure S4B
 plt.clf()
@@ -302,7 +302,7 @@ plt.legend(fontsize=14)
 plt.xlabel("Confidence Score", fontdict=font)
 plt.ylabel("MAE (second)", fontdict=font)
 plt.tight_layout()
-plt.savefig("./figs/figS4_conf_MAE.png", dpi=300)
+plt.savefig("./figs/figS4_conf_MAE.eps", format='eps')
 
 # Figure S4C
 plt.clf()
@@ -311,7 +311,7 @@ plt.xlim(0.18, 1.02)
 plt.xlabel("Confidence Score", fontdict=font)
 plt.ylabel("Counts", fontdict=font)
 plt.tight_layout()
-plt.savefig("./figs/figS4_conf_histogram_ref.png", dpi=300)
+plt.savefig("./figs/figS4_conf_histogram_ref.eps", format='eps')
 
 # Figure S4D
 plt.clf()
@@ -321,7 +321,7 @@ plt.ylim(0.8, 3.0)
 plt.legend(fontsize=14)
 plt.xlabel("Confidence Score", fontdict=font)
 plt.ylabel("MAE (second)", fontdict=font)
-plt.savefig("./figs/figS4_conf_MAE_ref.png", dpi=300)
+plt.savefig("./figs/figS4_conf_MAE_ref.eps", format='eps')
 
 # Figure S5
 bins = [(0.32, 0.36), (0.54, 0.58), (0.76, 0.80), (0.96, 1.0)]
@@ -353,7 +353,7 @@ for i_b, b in enumerate(bins):
   plt.xlabel("Log Abundance - Human Annotation", fontdict=font)
   plt.ylabel("Log Abundance - Prediction", fontdict=font)
   plt.tight_layout()
-  plt.savefig('./figs/figS5_conf_change_%d.png' % i_b, dpi=600)
+  plt.savefig('./figs/figS5_conf_change_%d.eps' % i_b, format='eps')
 
 ####################################################################
   
@@ -382,7 +382,7 @@ ax2.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=8,
            ncol=2, mode="expand", borderaxespad=0., fontsize=10)
 ax2.set_ylabel("Boundary Prediction Prob.", fontdict=font)
 plt.tight_layout()
-f.savefig('./figs/fig3_rs_reference.png', dpi=300)
+f.savefig('./figs/fig3_rs_reference.eps', format='eps')
 
 # Figure 3B
 plt.clf()
@@ -407,7 +407,7 @@ for i, pos in zip(samples, positions):
   ax2.plot(X[:, 0], pred_ref[i][:, 1], '--', color=color_ref, label='y pred end (Ref PB-Net)')
   ax2.set_ylim(0.01, 1.02)
 plt.tight_layout()
-f.savefig('./figs/fig3_rs_samples.png', dpi=600)
+f.savefig('./figs/fig3_rs_samples.eps', format='eps')
 
 ####################################################################
 sample_i = 10
@@ -450,13 +450,13 @@ ax1.plot(start, bg, 'r*', markersize=12, label='start')
 ax1.plot(end, bg, 'r^', markersize=9, label='end')
 ax1.set_ylabel("Intensity - Reference", fontdict=font)
 ax1.set_xlim(42.06, 42.74)
-f.savefig('./figs/figS1_att_reference.png', dpi=300)
+f.savefig('./figs/figS1_att_reference.eps', format='eps')
 
 plt.clf()
 plt.imshow(np.transpose(att_map), cmap='BuGn', extent=[42.06, 42.74, 42.74, 42.06])
 plt.ylabel("Retention Time - Reference (min)", fontdict={'size': 12})
 plt.xlabel("Retention Time - Sample (min)", fontdict={'size': 12})
-plt.savefig('./figs/figS1_att_att.png', dpi=300)
+plt.savefig('./figs/figS1_att_att.eps', format='eps')
 
 X = test_data[sample_i][0]
 bg = np.min(X[:, 1]) - (np.max(X[:, 1]) - np.min(X[:, 1])) * 0.02
@@ -480,7 +480,7 @@ ax2.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=8,
            ncol=2, mode="expand", borderaxespad=0., fontsize=10)
 ax2.set_ylabel("Boundary Prediction Prob.", fontdict=font)
 plt.tight_layout()
-f.savefig('./figs/figS1_att_sample.png', dpi=300)
+f.savefig('./figs/figS1_att_sample.eps', format='eps')
 
 ############################################################
 y_trues = []
@@ -520,7 +520,7 @@ ax2.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=8,
            ncol=2, mode="expand", borderaxespad=0., fontsize=10)
 ax2.set_ylabel("Boundary Prediction Prob.", fontdict=font)
 plt.tight_layout()
-plt.savefig('./figs/figS3_conf_illus.png', dpi=300)
+plt.savefig('./figs/figS3_conf_illus.eps', format='eps')
 
 #################################################################
 # Figure 1
@@ -533,7 +533,7 @@ bg = np.min(X[:, 1]) - (np.max(X[:, 1]) - np.min(X[:, 1])) * 0.02
 profile = test_data[i][2]
 f, ax1 = plt.subplots()
 ax1.plot(X[:, 0], X[:, 1], 'o-', color=(0.1, 0.1, 0.1, 0.8), linewidth=2., label='X')
-plt.savefig('./figs/fig1_model_structure_sample.png', dpi=300)
+plt.savefig('./figs/fig1_model_structure_sample.eps', format='eps')
 
 plt.clf()
 plt.subplot(2, 1, 1)
@@ -542,7 +542,7 @@ plt.plot(X[:, 0], y_pred[:, 1]/y_pred[:, 1].max(), 'o--', color=color_seq)
 plt.xticks([], [])
 plt.yticks([], [])
 plt.ylim(-0.1, 1.1)
-plt.savefig('./figs/fig1_model_structure_sample_pred.png', dpi=300)
+plt.savefig('./figs/fig1_model_structure_sample_pred.eps', format='eps')
 
 plt.clf()
 plt.subplot(2, 1, 1)
@@ -551,7 +551,7 @@ plt.plot(X[:, 0], y_pred_ref[:, 1]/y_pred_ref[:, 1].max(), 'o--', color=color_re
 plt.xticks([], [])
 plt.yticks([], [])
 plt.ylim(-0.1, 1.1)
-plt.savefig('./figs/fig1_model_structure_sample_pred_ref.png', dpi=300)
+plt.savefig('./figs/fig1_model_structure_sample_pred_ref.eps', format='eps')
 
 i = 500
 X = test_data[i][0][np.linspace(0, len(test_data[i][0])-1, 10).astype(int)]
@@ -562,7 +562,7 @@ f, ax1 = plt.subplots()
 ax1.plot(X[:, 0], X[:, 1], 'o-', color=(0.1, 0.1, 0.1, 0.5), linewidth=2., label='X')
 ax1.plot(profile[1], bg, 'r*', markersize=12, label='start')
 ax1.plot(profile[2], bg, 'r^', markersize=9, label='end')
-plt.savefig('./figs/fig1_model_structure_ref.png', dpi=300)
+plt.savefig('./figs/fig1_model_structure_ref.eps', format='eps')
 
 class Config:
     lr = 0.001
@@ -590,7 +590,7 @@ plt.imshow(att_map, cmap='BuGn', extent=extent)
 plt.xticks([], [])
 plt.yticks([], [])
 plt.tight_layout()
-plt.savefig('./figs/fig1_att.png', dpi=300)
+plt.savefig('./figs/fig1_att.eps', format='eps')
 
 for ct, sample_i in enumerate([24906, 7548]):
   X = test_data[sample_i][0]
@@ -608,7 +608,7 @@ for ct, sample_i in enumerate([24906, 7548]):
   ax1.set_xlabel("Retention Time (min)", fontdict={'size': 25})
   plt.tight_layout()
   ax1.tick_params(axis='both', which='major', labelsize=15)
-  plt.savefig('./figs/fig1_sample%d_up.png' % ct, dpi=300, bbox_inches = "tight")
+  plt.savefig('./figs/fig1_sample%d_up.eps' % ct, format='eps', bbox_inches = "tight")
   
   f, ax2 = plt.subplots()
   ax2.plot(X[:, 0], pred_ref[sample_i][:, 0], '-', color=color_ref, linewidth=2, label='y pred start (Ref PB-Net)')
@@ -622,7 +622,7 @@ for ct, sample_i in enumerate([24906, 7548]):
   ax2.legend(bbox_to_anchor=(0., -0.75, 1., .102), loc=8,
              ncol=1, mode="expand", borderaxespad=0., fontsize=20)
   ax2.set_ylabel("Boundary Prediction Prob.", fontdict={'size': 25})
-  plt.savefig('./figs/fig1_sample%d_down.png' % ct, dpi=300, bbox_inches = "tight")
+  plt.savefig('./figs/fig1_sample%d_down.eps' % ct, format='eps', bbox_inches = "tight")
 
 ############################################################
 inds = np.arange(len(test_data))
@@ -659,7 +659,7 @@ for i in inds:
   ax2.get_yaxis().set_ticks([])
 
 plt.tight_layout()  
-plt.savefig('./figs/figS6_samples.png', dpi=300)
+plt.savefig('./figs/figS6_samples.eps', format='eps')
 
 ############################################################
 
@@ -770,7 +770,7 @@ plt.legend(fontsize=10, loc=1)
 plt.xlabel("Retention time shift (second)", fontdict=font)
 plt.ylabel("Boundary MAE (second)", fontdict=font)
 plt.tight_layout()
-plt.savefig('./figs/figS7_augmentation_boundary_MAE.png', dpi=300)
+plt.savefig('./figs/figS7_augmentation_boundary_MAE.eps', format='eps')
 
 x = np.arange(-10, 11)
 y_bl = np.array([scores_bl[i][2] for i in x])
@@ -790,5 +790,5 @@ plt.legend(fontsize=14, loc=1)
 plt.xlabel("Retention time shift (second)", fontdict=font)
 plt.ylabel("Abd Spearman's r", fontdict=font)
 plt.tight_layout()
-plt.savefig('./figs/figS7_augmentation_spearmanr.png', dpi=300)
+plt.savefig('./figs/figS7_augmentation_spearmanr.eps', format='eps')
 
