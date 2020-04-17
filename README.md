@@ -10,9 +10,11 @@ Note that all pickle files need to be downloaded through git-lfs
 `plotting.py` will generate the figures and tables used in the manuscript. `human_annotators.py` will generate the comparison figure/numbers between PB-Nets and group of annotators(Figure 4). `skyline_corrs.py` will generate the abundance metrics for skyline predictions.
 
 ## Requirements
-* pandas
-* sklearn
 * numpy
+* pandas
 * scipy
-* matplotlib
+* sklearn
 * pytorch
+* pyopenms
+* pyteomics
+* matplotlib
